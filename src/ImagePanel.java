@@ -1,7 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+la classe Image Panel permet de dessiner les images dans un panel 
  */
 
 
@@ -11,12 +9,10 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-/**
- *
- * @author user
- */
+
 class ImagePanel extends JPanel {
 
+  
   private Image img;
 
   public ImagePanel(String img) {
@@ -26,6 +22,7 @@ class ImagePanel extends JPanel {
   public ImagePanel(Image img) {
     this.img = img;
    
+    //parametrage de JPanel
     Dimension size = new Dimension(250, 250);
     setPreferredSize(size);
     setMinimumSize(size);
@@ -34,15 +31,16 @@ class ImagePanel extends JPanel {
     setLayout(null);
   }
 
+  //dessiner l'image 
   public void paintComponent(Graphics g) {
-      //super.paintComponent(g);
-    g.drawImage(img, 0, 0, null);
-    repaint();
     
-   
-  
+    g.drawImage(getImg(), 0, 0, null);
+    repaint();
   }
+
   
- 
+    public Image getImg() {
+        return img;
+    }
 
 }

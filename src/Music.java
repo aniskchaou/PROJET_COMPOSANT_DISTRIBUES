@@ -1,4 +1,7 @@
 
+/**
+ * la classe Music permet de gerer la lecture des fichier mp3 et la navigation entre la liste de musique
+ */
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,168 +12,151 @@ import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 import javazoom.jlgui.basicplayer.BasicPlayer;
 import javazoom.jlgui.basicplayer.BasicPlayerException;
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
-/**
- *
- * @author user
- */
 public class Music {
-    
-   public static Thread threadmp3;
-    public static Runnable runnable ;
+
+    public static Thread lire_musique_thread;
+    public static Runnable runnable;
     public String current_music;
-  String[]  getMusicFiles()
-    {
-         File folder = new File("music");
-File[] listOfFiles = folder.listFiles();
-String names[]=new String[listOfFiles.length];
-for (int i = 0; i < listOfFiles.length; i++) {
-  if (listOfFiles[i].isFile()) {
-    System.out.println("File " + listOfFiles[i].getName());
-    names[i]=listOfFiles[i].getName().replace(".mp3","");
-  } else if (listOfFiles[i].isDirectory()) {
-    System.out.println("Directory " + listOfFiles[i].getName());
+    String names[];
+    File folder;
+
     
-  }  
-    }
-
-return names;
-
-    }
-
     public Music() {
-        String[] music_lists=getMusicFiles();
-        current_music=music_lists[0];
+        String[] music_lists = getMusiques();
+        current_music = music_lists[0];
     }
-  
-  int getIndex(String curent_music)
-  {
-      String[] music_lists=getMusicFiles();
-      
-      int index=0;
-      for (int i = 0; i < music_lists.length; i++) {
-         
-         if(music_lists[i].equals(curent_music))
-        {
-              
-              index=i;
-         }
-  System.err.println("curent_music" +curent_music+" "+music_lists[index]);
-      }
-      
-       return index;
-  }
-  
-      void playmp3(String filename)
-    {
-          runnable = () -> {
-          FileInputStream fis = null;
-         // current_music=filename;
-             try {
-                 fis = new FileInputStream("music\\"+filename+".mp3");
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
-             }
-             Player playMP3 = null;
-             try {
-                 playMP3 = new Player(fis);
-             } catch (JavaLayerException ex) {
-                 Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
-             }
 
-             try {
-                 playMP3.play();
-                 
-             } catch (JavaLayerException ex) {
-                 Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
-             }
-             
-             
-             };
+    
+    
+    //recherche dans le dossier la liste des fichiers mp3
+    String[] getMusiques() {
+        folder = new File("music");
+        File[] listOfFiles = folder.listFiles();
+        names = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
 
- threadmp3 = new Thread(runnable);
-threadmp3.start();
-        
+                names[i] = listOfFiles[i].getName().replace(".mp3", "");
+            } else if (listOfFiles[i].isDirectory()) {
+            }
+        }
+        return names;
     }
-      
-      
-      void stopMusic()
-      {
-           
-                
-                
-           if(threadmp3.isAlive())
-             {
-                 System.out.print("true");
-                 try {
-                     threadmp3.sleep(1000);
-                 } catch (InterruptedException ex) {
-                     Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
-                 }
-                threadmp3.stop();
-               
-             }
-           
-         
-      }
-      
-      
-      
-      void afficher_liste_musique(JList list_musique)
-    {
-        String names[]=getMusicFiles();
-        
-               
-          
-        //create list 
-       JList b= new JList(names); 
-          
-        //set a selected index 
+
+    
+    
+    //recherche l'index de la musique en cours de lecture dans la liste des fichiers mp3
+    int getIndex(String curent_music) {
+        String[] music_lists = getMusiques();
+        int index = 0;
+        for (int i = 0; i < music_lists.length; i++) {
+            if (music_lists[i].equals(curent_music)) {
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    
+    
+    //lire fichier mp3 dans un thread
+    void playmp3(String filename) {
+        runnable = () -> {
+            FileInputStream fis = null;
+
+            try {
+                fis = new FileInputStream("music\\" + filename + ".mp3");
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Player playMP3 = null;
+            try {
+                playMP3 = new Player(fis);
+            } catch (JavaLayerException ex) {
+                Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                playMP3.play();
+
+            } catch (JavaLayerException ex) {
+                Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        };
+
+        lire_musique_thread = new Thread(runnable);
+        lire_musique_thread.start();
+
+    }
+
+    
+    
+    //arreter la lecture de musique     
+    void stopMusic() {
+        if (lire_musique_thread.isAlive()) {
+            System.out.print("true");
+            try {
+                lire_musique_thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            lire_musique_thread.stop();
+        }
+    }
+
+    
+    
+    
+//afficher la liste de musique qui se touve dans le dossier music    
+    void afficher_liste_musique(JList list_musique) {
+        String names[] = getMusiques();
+        JList b = new JList(names);
         b.setSelectedIndex(0);
-         
-        
         list_musique.setListData(names);
-        
 
     }
-      
-      void next()
-      {   stopMusic();
-           int index= getIndex(current_music);
-           System.err.println(""+index);
-           String[]  music_lists=getMusicFiles();
-        
-         if(index==music_lists.length)
-            {index=0;
-             playmp3(music_lists[index]);
-            }
- current_music=music_lists[index+1];
-  System.out.println("Music.next()"+current_music);
-           playmp3(music_lists[index+1]);
-          
-           
-          
-      }
-      
-      void previous()
-      {
-          stopMusic();
-           int index= getIndex(current_music);
-           System.err.println(""+index);
-           String[]  music_lists=getMusicFiles();
-         
-           if(index==0)
-            {index=0;
-               playmp3(music_lists[index]);
-            }
-           current_music=music_lists[index-1];
-           System.out.println("Music.previous()"+current_music);
-           playmp3(music_lists[index-1]);
-            
-      }
+    
+    
+    
+//lecture de fichier mp3 suivant     
+    void next() {
+        stopMusic();
+        int index = getIndex(current_music);
+        String[] music_lists = getMusiques();
+        if (index == music_lists.length) {
+            index = 0;
+            playmp3(music_lists[index]);
+        }
+        current_music = music_lists[index + 1];
+        playmp3(music_lists[index + 1]);
+    }
+   
+    
+//lecture de fichier mp3 precedent     
+    void previous() {
+        stopMusic();
+        int index = getIndex(current_music);
+        System.err.println("" + index);
+        String[] music_lists = getMusiques();
+
+        if (index == 0) {
+            index = 0;
+            playmp3(music_lists[index]);
+        }
+        current_music = music_lists[index - 1];
+        playmp3(music_lists[index - 1]);
+    }
+
+    
+    
+    
+    
+    public String[] getNames() {
+        return names;
+    }
+
+    public File getFolder() {
+        return folder;
+    }
+
 }

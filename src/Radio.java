@@ -1,5 +1,6 @@
-
-
+/*
+ * la classe Radio permet d'assuser la lecture de radio streaming 
+ */
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,80 +11,63 @@ import java.util.logging.Logger;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author user
- */
 public class Radio {
-      public static Thread threadmp3;
-    public static Runnable runnable ;
-         private static void playRadioStream ( String spec ) throws IOException, JavaLayerException
-    {
-        // Connection
-        URLConnection urlConnection = new URL ( spec ).openConnection ();
 
-        // If you have proxy
-        //        Properties systemSettings = System.getProperties ();
-        //        systemSettings.put ( "proxySet", true );
-        //        systemSettings.put ( "http.proxyHost", "host" );
-        //        systemSettings.put ( "http.proxyPort", "port" );
-        // If you have proxy auth
-        //        BASE64Encoder encoder = new BASE64Encoder ();
-        //        String encoded = encoder.encode ( ( "login:pass" ).getBytes () );
-        //        urlConnection.setRequestProperty ( "Proxy-Authorization", "Basic " + encoded );
+    public static Thread lectureradio_thread;
+    public static Runnable runnable;
+    private String url = null;
 
-        // Connecting
-        urlConnection.connect ();
-
-        // Playing
-        Player player = new Player ( urlConnection.getInputStream () );
-        player.play ();
+    public Radio() {
     }
-    
-     void play_radio(int n)
-    {
-          runnable = () -> {
-          FileInputStream fis = null;
-        String url=null;
-        if(n==1)
-         url="http://radio.flex.ru:8000/radionami";
-                      try
-        {
-            playRadioStream ( url);
+
+    //permet de gerer et lecture les flux 
+    private static void playRadioStream(String spec) throws IOException, JavaLayerException {
+        URLConnection urlConnection = new URL(spec).openConnection();
+        urlConnection.connect();
+        Player player = new Player(urlConnection.getInputStream());
+        player.play();
+    }
+
+//permet la lecture de radio
+    void lectureRadio(int n) {
+        runnable = () -> {
+            FileInputStream fis = null;
+
+            if (n == 1) {
+                url = "http://radio.flex.ru:8000/radionami";
+            }
+            if (n == 2) {
+                url = "http://streaming.radio.funradio.fr/fun-1-44-128";
+            }
+            try {
+                playRadioStream(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JavaLayerException e) {
+                e.printStackTrace();
+            }
+
+        };
+        lectureradio_thread = new Thread(runnable);
+        lectureradio_thread.start();
+    }
+
+//arrete rde lradio streaming     
+    void arreterRadio() {
+        if (lectureradio_thread.isAlive()) {
+
+            try {
+                lectureradio_thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            lectureradio_thread.stop();
+
         }
-        catch ( IOException e )
-        {
-            e.printStackTrace ();
-        }
-        catch ( JavaLayerException e )
-        {
-            e.printStackTrace ();
-        }
-        
-    
-                  };
-      threadmp3 = new Thread(runnable);
-threadmp3.start();
-}
-     
-     void stop()
-     {
-           if(threadmp3.isAlive())
-             {
-                 System.out.print("true");
-                 try {
-                     threadmp3.sleep(1000);
-                 } catch (InterruptedException ex) {
-                     Logger.getLogger(Music.class.getName()).log(Level.SEVERE, null, ex);
-                 }
-                threadmp3.stop();
-               
-             }
-     }
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
 }
